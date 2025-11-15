@@ -215,7 +215,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ gameState, dmResponse, onAction
                         ))}
                         <form 
                             onSubmit={handleCustomActionSubmit}
-                            className="flex flex-col p-4 bg-gray-700/50 border border-gray-600 rounded-lg hover:border-amber-500 focus-within:border-amber-500 transition-all duration-200"
+                            className="flex flex-col h-full p-4 bg-gray-700/50 border border-gray-600 rounded-lg hover:border-amber-500 focus-within:border-amber-500 transition-all duration-200"
                         >
                             <label htmlFor="custom-action-input" className="sr-only">Custom Action</label>
                             <textarea
@@ -224,7 +224,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ gameState, dmResponse, onAction
                                 onChange={(e) => setCustomActionText(e.target.value)}
                                 placeholder="What do you do?"
                                 className="bg-transparent focus:outline-none w-full text-gray-200 placeholder-gray-400 resize-none flex-grow"
-                                rows={2}
                             />
                             <button
                                 type="submit"
