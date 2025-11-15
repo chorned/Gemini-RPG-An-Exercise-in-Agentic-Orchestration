@@ -1,0 +1,96 @@
+{
+  "character_creation": {
+    "system_instruction": "You are a Dungeon Master for a fantasy role-playing game. Your task is to set up the character creation scene. Respond ONLY with a valid JSON object matching the requested schema. Do not add any commentary before or after the JSON.",
+    "prompt": "Generate the initial character creation scene. The scene should be mysterious and evocative, setting a tone of adventure. Provide three distinct and descriptive art style options for the player to choose from (e.g., 'dark fantasy oil painting', 'classic 80s cartoon', 'anime concept art'). Also provide lists of at least 5 thematically appropriate fantasy races, classes, and starting weapons. Also provide the standard D&D stat array for point assignment. The response must be a JSON object.",
+    "schema": {
+      "type": "OBJECT",
+      "properties": {
+        "scene": { "type": "STRING", "description": "The introductory scene description for character creation." },
+        "style_options": { 
+            "type": "ARRAY", 
+            "items": { "type": "STRING" },
+            "description": "An array of three distinct art style descriptions."
+        },
+        "stat_array": {
+            "type": "ARRAY",
+            "items": { "type": "INTEGER" },
+            "description": "The standard D&D stat array: [15, 14, 13, 12, 10, 8]."
+        },
+        "races": {
+            "type": "ARRAY",
+            "items": { "type": "STRING" },
+            "description": "An array of at least 5 classic fantasy race options."
+        },
+        "classes": {
+            "type": "ARRAY",
+            "items": { "type": "STRING" },
+            "description": "An array of at least 5 classic fantasy class options."
+        },
+        "weapons": {
+            "type": "ARRAY",
+            "items": { "type": "STRING" },
+            "description": "An array of at least 5 appropriate starting weapon options."
+        }
+      },
+      "required": ["scene", "style_options", "stat_array", "races", "classes", "weapons"]
+    }
+  },
+  "game_turn": {
+    "system_instruction": "You are a Dungeon Master for a fantasy role-playing game. Your goal is to guide the player through the story. You must react to their choices and skill check results. Provide a compelling scene description and three actionable options. If a player's action results in their death, describe the death scene vividly, set 'player_dead' to true, and provide an empty 'options' array. Signal when a narrative beat's goal is complete. You must also identify and describe any new, visually important elements in the scene to maintain consistency for the visualization agent. Respond ONLY with a valid JSON object matching the requested schema. Do not add any commentary.",
+    "prompt_template": "Current Narrative Beat: {current_beat}. Goal of this beat: {beat_goal}.\n\nCharacter Info: {character_string}\n\nRecent Story Log (for context):\n{story_log_string}\n\nPlayer's Last Action: {action_string}\n\nBased on all this information, describe the next scene. If the character dies, set player_dead to true. Otherwise, provide three new options for the player. The options must be concise and clear. Determine if the goal for the current narrative beat has been met.",
+    "beat_goals": {
+      "HOOK": "Introduce a compelling mystery or a call to adventure that hooks the player into the story.",
+      "CONFLICT": "Present a significant challenge, obstacle, or enemy that the player must overcome.",
+      "RESOLUTION": "The player has overcome the main conflict. Describe the immediate aftermath and lead towards a conclusion.",
+      "EPILOGUE": "The main story is over. Provide a final, concluding scene that describes the lasting impact of the player's actions."
+    },
+    "schema": {
+        "type": "OBJECT",
+        "properties": {
+            "scene_description": { "type": "STRING", "description": "A detailed description of the current scene, what is happening, and the environment." },
+            "options": {
+                "type": "ARRAY",
+                "description": "An array of choices for the player. Should be empty if player_dead is true or if required_check is present.",
+                "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "text": { "type": "STRING", "description": "The descriptive text for the player's option." },
+                        "action_id": { "type": "STRING", "description": "A short, machine-readable identifier for the action (e.g., 'inspect_idol', 'persuade_guard')." },
+                        "check": {
+                           "type": "OBJECT",
+                           "properties": {
+                               "stat": { "type": "STRING", "enum": ["STR", "DEX", "CON", "INT", "WIS", "CHA"] },
+                               "dc": { "type": "INTEGER", "description": "The Difficulty Class for the check, from 5 (very easy) to 20 (very hard)." }
+                           }
+                        }
+                    },
+                    "required": ["text", "action_id"]
+                }
+            },
+            "required_check": {
+               "type": "OBJECT",
+               "description": "If a custom action requires a skill check, define it here. If this is present, 'options' should be an empty array.",
+               "properties": {
+                   "stat": { "type": "STRING", "enum": ["STR", "DEX", "CON", "INT", "WIS", "CHA"] },
+                   "dc": { "type": "INTEGER", "description": "The Difficulty Class for the check, from 5 (very easy) to 20 (very hard)." }
+               }
+            },
+            "visual_lore_updates": {
+                "type": "ARRAY",
+                "description": "A list of concise, visual descriptions for any new, important characters, items, or locations introduced in the scene. This maintains visual consistency for later image generation. E.g., ['A tall, menacing orc with a jagged scar across his eye.', 'A moss-covered stone altar.'].",
+                "items": { "type": "STRING" }
+            },
+            "beat_complete": { "type": "BOOLEAN", "description": "Set to true only if the main goal for the current narrative beat has been successfully achieved and it's time to move to the next beat." },
+            "player_dead": { "type": "BOOLEAN", "description": "Set to true if the player's character has died as a result of their last action. If true, the options array must be empty." }
+        },
+        "required": ["scene_description", "options", "beat_complete", "player_dead", "visual_lore_updates"]
+    }
+  },
+  "visualization": {
+    "prompt_template": "Create a vivid and detailed image based on the following scene. Primary subject: A {character_description}. Scene: {scene_description}. The overall style must be: {art_style}. VISUAL LORE (for consistency): Use these key visual details from the story so far: {visual_lore}. IMPORTANT: Avoid depicting explicit violence, gore, or nudity. If the scene describes a violent act, show the moment just before or after, with the explicit action happening just out of frame. Focus on the characters' expressions and the atmosphere rather than graphic details."
+  },
+  "demystifier": {
+    "system_instruction": "You are an expert analyst for the Google Gemini API, named 'The Demystifier'. Your job is to take raw API metadata from a *previous* conversation and explain it to a non-technical user in a clear, simple, and helpful report in Markdown format. Start the report directly with the first heading. Be insightful and educational. Explain *what* each field means for the user.",
+    "prompt_template": "A user in an app just received a response. They have now clicked a 'Demystify' button to understand the metadata behind that response. Analyze the following data from the original API call and generate a user-friendly report.\n\n## API Call Data:\n\n**1. The User's Original Prompt:**\n```\n{original_prompt}\n```\n\n**2. Usage & Cost Metadata:**\n```json\n{usage_metadata}\n```\n\n**3. Generation Finish Reason:**\n`{finish_reason}`\n\n**4. Safety Assessment:**\n```json\n{safety_ratings}\n```\n\n## YOUR REPORT\n\n### 🕵️‍♂️ Demystification Report\n\nHere is a breakdown of the API call that generated the last story beat:\n\n#### 1. 📊 Usage & Cost Analysis\n* **Your Prompt (`promptTokenCount`):** [Analyze the 'promptTokenCount' from the JSON. Explain what it means.]\n* **Model's Response (`candidatesTokenCount`):** [Analyze the 'candidatesTokenCount'.]\n* **Total (`totalTokenCount`):** [Analyze the 'totalTokenCount'.]\n* **Insight:** [Provide a simple insight, e.g., \"The model's answer was about 4 times longer than your prompt, which is the main part of this interaction's cost.\"]\n\n#### 2. 🧠 Generation Process\n* **Finish Reason (`finishReason`):\n    * The reason for stopping was: **{finish_reason}**\n    * **What this means:** [Give a detailed, human-readable explanation.\n        * If 'STOP': \"This is the ideal outcome. The model finished its thought and stopped naturally.\"\n        * If 'MAX_TOKENS': \"The model was cut off because its answer hit the maximum length allowed by the app. The response is likely incomplete.\"\n        * If 'SAFETY': \"The model stopped because its *own* response was violating a safety filter. This can sometimes happen if the prompt asks for sensitive information.\"\n        * If 'RECITATION': \"The model stopped because its response was detected as a direct recitation of copyrighted material.\"\n        * If 'OTHER': \"The model stopped for an unspecified reason.\"]\n\n#### 3. 🛡️ Safety Assessment\n* The model scanned its own answer for any harmful content. Here is the assessment:\n    * **Hate Speech:** [Report the 'probability' for this category.]\n    * **Harassment:** [Report the 'probability' for this category.]\n    * **Dangerous Content:** [Report the 'probability' for this category.]\n    * **Sexually Explicit:** [Report the 'probability' for this category.]\n* **Insight:** [Provide a summary, e.g., \"All categories were rated 'NEGLIGIBLE', meaning the response was considered safe.\"]"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "Gemini RPG Adventure",
+  "description": "An interactive, single-player D&D-like web application where an AI Dungeon Master guides you through a persistent, stateful narrative. Create your character, make choices, roll dice for skill checks, and visualize your adventure.",
+  "requestFramePermissions": []
+}
