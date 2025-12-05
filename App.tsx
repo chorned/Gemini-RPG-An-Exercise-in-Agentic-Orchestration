@@ -1,15 +1,16 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { GameState, Character, DMResponse, Action, DiceCheckResult, AppView, ApiMetadata } from './types';
-import { PASSWORD, STORY_BEATS } from './constants';
+import { STORY_BEATS } from './constants';
 import { getGameTurn, generateSceneImage } from './services/geminiService';
-import PasswordScreen from './components/PasswordScreen';
+import WelcomeScreen from './components/WelcomeScreen';
 import CharacterCreationScreen from './components/CharacterCreationScreen';
 import GameScreen from './components/GameScreen';
 import LoadingSpinner from './components/LoadingSpinner';
 import DemystifyModal from './components/DemystifyModal';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<AppView>('password');
+  const [view, setView] = useState<AppView>('welcome');
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -20,14 +21,6 @@ const App: React.FC = () => {
   const [isAdventureOver, setIsAdventureOver] = useState(false);
   const [lastApiMetadata, setLastApiMetadata] = useState<ApiMetadata | null>(null);
   const [showDemystifyModal, setShowDemystifyModal] = useState(false);
-
-  const handleLogin = (password: string) => {
-    if (password === atob(PASSWORD)) {
-      setView('character_creation');
-    } else {
-      alert('Incorrect password.');
-    }
-  };
 
   const startGame = async (character: Character, artStyle: string) => {
     const initialGameState: GameState = {
@@ -145,8 +138,8 @@ const App: React.FC = () => {
 
   const renderView = () => {
     switch (view) {
-      case 'password':
-        return <PasswordScreen onLogin={handleLogin} />;
+      case 'welcome':
+        return <WelcomeScreen onStart={() => setView('character_creation')} />;
       case 'character_creation':
         return <CharacterCreationScreen onCharacterCreate={startGame} />;
       case 'game':

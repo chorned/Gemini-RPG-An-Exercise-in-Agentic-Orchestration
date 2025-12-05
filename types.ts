@@ -1,6 +1,7 @@
 
 
 
+
 export type Stat = 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA';
 
 export type Stats = {
@@ -55,7 +56,7 @@ export interface Action {
 
 export type DiceCheckResult = 'success' | 'fail';
 
-export type AppView = 'password' | 'character_creation' | 'game';
+export type AppView = 'welcome' | 'character_creation' | 'game';
 
 export interface CharacterCreationPayload {
     scene: string;
